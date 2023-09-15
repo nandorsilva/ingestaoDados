@@ -49,14 +49,6 @@ docker image push <<conta>>/kafka-connet-debezium-lab
 
 > As imagens customizadas encontra-se no https://hub.docker.com/
 
-### Subindo um cluster kafka connect
-
-
-```
-cd ..
-cd ambiente
-docker-compose up -d kafka-broker zk connect 
-```
 
 Container  criado? Vamos ver!
 

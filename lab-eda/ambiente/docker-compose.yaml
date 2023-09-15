@@ -109,9 +109,9 @@ services:
             docker-kafka-server:
               properties:
                 bootstrap.servers: "kafka-broker:29092"       
- #             connect:
- #               - name: "connect"
- #                 url: "http://connect:8083"
+              connect:
+               - name: "connect"
+                 url: "http://connect:8083"
     ports:
       - "8080:8080"
     depends_on:

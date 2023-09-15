@@ -22,7 +22,7 @@ No diretório `/lab-eda/ambiente` execute o comando abaixo
 ```
 cd lab-eda/ambiente/
 
-docker-compose up -d zk kafka-broker akhq
+docker-compose up -d zk kafka-broker akhq connect
 
 ```
 
