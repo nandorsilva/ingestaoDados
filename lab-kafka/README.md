@@ -17,9 +17,13 @@
 
 ## Criando o ambiente Kafka com o docker compose
 
-No diretório `/lab-kafka` execute o comando abaixo
+No diretório `/lab-eda/ambiente` execute o comando abaixo
+
 ```
-docker-compose up -d
+cd lab-eda/ambiente/
+
+docker-compose up -d zk kafka-broker akhq
+
 ```
 
 Verificando se os containers foram criados com sucesso
@@ -32,10 +36,8 @@ Verificando as imagens que foram feitas download do docker-hub
  docker image ls
 ```
 
-Verificando se a ferramenta Kafdrop realizou o deploy com sucesso
-http://localhost:19000/
-
->Kafdrop é uma interface de usuário da web simples, para visualizar tópicos Kafka e navegar em grupos de consumidores. A ferramenta exibe informações como corretores, tópicos, partições, consumidores e permite visualizar mensagens.
+Verificando se a ferramenta Akhq realizou o deploy com sucesso
+http://localhost:8080/
 
 ---
 
