@@ -89,7 +89,7 @@ Criando tópicos com configurações
 kafka-topics --bootstrap-server localhost:9092 --create --topic topico-config --partitions 3 --replication-factor 1
 
 
-kafka-configs --bootstrap-server kafka:29092 --entity-type topics --entity-name topico-config --alter --add-config retention.ms=259200000
+kafka-configs --bootstrap-server localhost:9092 --entity-type topics --entity-name topico-config --alter --add-config retention.ms=259200000
 
 kafka-topics --bootstrap-server localhost:9092 --describe --topic topico-config
 
