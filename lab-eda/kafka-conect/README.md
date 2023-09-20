@@ -23,7 +23,7 @@
 ### Realizando download dos plugins Debezium Sql Server e PostGres (Source) 
 
 ```
-cd kafka-conect
+cd ambiente/kafka-conect
 
 mkdir plugin
 
