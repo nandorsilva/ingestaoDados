@@ -20,83 +20,66 @@
 ![Exemplo Kafka Conect](../../content/kafka-connect.png)
 
 
-### Realizando download dos plugins Debezium Sql Server e PostGres (Source) 
+### Realizando download do plugins Debezium para PostGres (Source) 
 
 ```
-cd ambiente/kafka-conect
+cd lab-eda/kafka-conect
 
 mkdir plugin
-
-curl https://repo1.maven.org/maven2/io/debezium/debezium-connector-sqlserver/1.6.2.Final/debezium-connector-sqlserver-1.6.2.Final-plugin.tar.gz | tar xvz -C plugin
 
 curl -sfSL https://repo1.maven.org/maven2/io/debezium/debezium-connector-postgres/2.1.3.Final/debezium-connector-postgres-2.1.3.Final-plugin.tar.gz | tar xz -C plugin
 
 ```
 
-Criando a imagem junto com os plugins
+Criando a imagem junto com o plugin do Debezium Postgres
 
 
 ```
- docker image build -t <<usuario>>/kafka-connet-debezium-lab  -f Dockerfile .
+ docker image build -t <<usuario>>/kafka-connet-debezium-lab-v0  -f Dockerfile .
  
 ```
 
 Vamos enviar a imagem para o dockerhub ??
+https://hub.docker.com/
 
 ```
-docker image push <<conta>>/kafka-connet-debezium-lab
+docker image push <<conta>>/kafka-connet-debezium-lab-v0
 ```
 
 > As imagens customizadas encontra-se no https://hub.docker.com/
 
 
-Container  criado? Vamos ver!
+Container  criado? ...mas antes
+
+Altere o arquivo ambiente/docker-compose.yaml da imagem criada no serviço `connect`
+
+
+No diretório `/lab-eda/ambiente` execute o comando abaixo
 
 ```
+cd ../ambiente/
+
+docker-compose up -d  connect
+
 docker container ls
 ```
 
-Listando os plugins existente, os defaults da imagem e os debezium que foi inserido na imagem, via Dockerfile
+Listando os plugins existentes, os padrões da imagem e do debezium que foi inserido na imagem, via arquivo `Dockerfile`
 
 ```
 docker exec -it kafkaConect curl  http://localhost:8083/connector-plugins
 ```
 
-## Configurando os Conectores SQL e Postgres
+## Configurando o Conector Postgres
 
-### Configurando Banco de dados CDC para SQL
 
-Será utilizado o connector debezium para sql server, ele faz a leitura do banco de dados via CDC.
-
-> Para nossa exemplo iremos subir um banco de dados, caso já tenha um banco habilitado o CDC pode-se usar ele. Mais detalhes do que é Sql Server CDC, https://docs.microsoft.com/pt-br/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15
-
-```
-docker-compose up -d sqlserver
-```
-
-Para esse tutorial vamos utilizar a imagem sql server da Microsoft `mcr.microsoft.com/mssql/server:2019-latest`. Para criar a estrutura dos dados estou utilizando o próprio container criado.
-
->O arquivo para habilitar CDC e criar o banco de dados, as tabelas e popular com alguns dados está em sql/init.sql que foi executado via Microsoft SQL Server Management Studio ou você pode executar pelo próprio pod conforme código abaixo
-
-Executando os scripts
-
-```
-export  SA_PASSWORD=Password!
-cat sql/init.sql | docker exec -i sqlserver /opt/mssql-tools/bin/sqlcmd -U sa -P $SA_PASSWORD
-
-docker exec -i sqlserver /opt/mssql-tools/bin/sqlcmd -U sa -P $SA_PASSWORD -d dbEcommerce -Q "select * from produtos"
-
-docker exec -i sqlserver /opt/mssql-tools/bin/sqlcmd -U sa -P $SA_PASSWORD -d dbEcommerce -Q "INSERT INTO produtos(nome,descricao)  VALUES ('Lapis','lapis de escrever');"
-
-```
-
-### Provisionando Banco de dados Postgres e PgAdmin
+### Provisionando Banco de dados Postgres e a ferramenta PgAdmin
 
 ```
 docker-compose up -d postgres pgadmin
 ```
 
-Acesso o PgAdmin http://localhost:5433/
+Acesso para o PgAdmin http://localhost:5433/
 
 
 * Login: lab-pgadmin4@pgadmin.org
@@ -130,20 +113,15 @@ https://docs.confluent.io/platform/current/connect/references/restapi.html
 Criando o conector PostGres
 
 ```
-cd ..
-cd kafka-conect
+
+cd ../kafka-conect
 
 http PUT http://localhost:8083/connectors/connector-postgres/config < conector-postgres.json
-```
-
-Criando o conector Sql Server
-
 
 ```
- http PUT http://localhost:8083/connectors/connector-sql/config < conector-sql.json
-```
 
-* Observe os arquivos `conector-postgres.json` e `conector-sql.json`
+
+* Observando o arquivo `conector-postgres.json` 
 
 Algumas informações básicas sobre o connector:
 
@@ -156,34 +134,29 @@ Algumas informações básicas sobre o connector:
 * `spec.config.table.whitelist`: lista separada por vírgulas de regex especificando quais tabelas você deseja monitorar para a captura de dados alterados
 
 
-Listando os conectors
+Listando os conectores
 
 ```
 http http://localhost:8083/connectors/
 ```
 
-Verificando o status dos conectors
+Verificando o status dos conectores
 
 ```
-http http://localhost:8083/connectors/connector-sql/status
 http http://localhost:8083/connectors/connector-postgres/status
 
 ```
 
+### E o Akhq ?
+
 
 ### Testando o Conector
 
-Vamos inserir alguns registros nas tabelas e listar os topicos do Kafka
+Vamos inserir alguns registros nas tabelas e listar os tópicos do Kafka
 
 
-```
-export SA_PASSWORD=Password!
 
-docker exec -i sqlserver /opt/mssql-tools/bin/sqlcmd -U sa -P $SA_PASSWORD -d dbEcommerce -Q "INSERT INTO produtos(nome,descricao)  VALUES ('Lapis','lapis de escrever');"
-
-```
-
-### Insere um registro na tabela `inventory.products`
+### Inserir um registro na tabela `inventory.products`
 
 
 ![Exemplo Kafka Conect](../../content/insert.png)
@@ -202,16 +175,11 @@ kafka-topics --bootstrap-server localhost:9092 --list
 ```
 
 
-*Consumindo mensagem sqldebezium.dbo.produtos - Datasource SQL Server*
+
+*Consumindo mensagem postgres.inventory.products Datasource Postgres*
 
 ```
-kafka-console-consumer --bootstrap-server localhost:9092 --topic sqldebezium.dbo.produtos --from-beginning
-```
-
-*Consumindo mensagem dbserver1.inventory.orders Datasource Postgres*
-
-```
-kafka-console-consumer --bootstrap-server localhost:9092 --topic dbserver1.inventory.orders --from-beginning
+kafka-console-consumer --bootstrap-server localhost:9092 --topic postgres.inventory.products --from-beginning
 ```
 
 
@@ -220,33 +188,66 @@ kafka-console-consumer --bootstrap-server localhost:9092 --topic dbserver1.inven
 
 ```
 exit
-http http://localhost:8083/connectors/connector-sql/config
+
 http http://localhost:8083/connectors/connector-postgres/status
 
 ```
 
-Parar os connetores
+Interagindo com os connetores
 
 ```
-http PUT http://localhost:8083/connectors/connector-sql/pause
-http http://localhost:8083/connectors/connector-sql/status
-http PUT http://localhost:8083/connectors/connector-sql/resume
+http PUT http://localhost:8083/connectors/connector-postgres/pause
+http http://localhost:8083/connectors/connector-postgres/status
+http PUT http://localhost:8083/connectors/connector-postgres/resume
 ```
 
-## Desafios
+### Configurando conector SYNC do MinIO
+
+Subindo o serviço do MinIO
+
+```
+cd ../ambiente
+docker-compose up -d minio
+```
+
+> http://localhost:9001/login
 
 
-### Desafio 1
-
-*Ativar o akhq para kafka connect*
+Intalando o plugin do MinIO
 
 
-### Desafio 2
+```
+wget https://api.hub.confluent.io/api/plugins/confluentinc/kafka-connect-s3/versions/10.5.5/archive
 
-*Habilitar o CloudEvents Debezium*
+unzip archive
+
+mkdir -p plugin/kafka-connect-s3
+
+mv confluentinc-kafka-connect-s3-10.5.5/lib/* plugin/kafka-connect-s3/
+
+docker image build -t fernandos/kafka-connet-debezium-lab-v1  -f Dockerfile .
+```
+
+Mudando a imagem do Kafka Conect
+
+```
+cd ../ambiente/
+
+docker-compose up -d  connect
+```
+
+Instalando o conector do MinIO
+
+```
+cd ../kafka-conect
+
+http PUT http://localhost:8083/connectors/connector-minio/config < conector-minio.json
+```
 
 
-### Desafio 2
+## Desafio
+
+
 
 *Fazer o Sinc para o Mongodb*
 
@@ -256,16 +257,17 @@ http PUT http://localhost:8083/connectors/connector-sql/resume
 >Dicas
 
 ```
+//Download do Plugin do Kafka Connect
  wget https://repo1.maven.org/maven2/org/mongodb/kafka/mongo-kafka-connect/1.6.1/mongo-kafka-connect-1.6.1-all.jar -P plugin
 
-
-  mongo-connect:
-    image: mongo:3.4.23
-    container_name: db
-    volumes:
-      - "~/tmp/mongodbdata:/data/db"
-
+//Instalação do Mongodb mongo-connect
+Instalando o conector do MinIO
 
  http PUT http://localhost:8083/connectors/sinc-mongodb/config < sinc-mongodb.json
 
  ```
+
+ > Lab Mongodb
+ [LAB NOSQL](../../lab-nosql/README.md)
+
+ https://github.com/nandorsilva/arc-dados/tree/main/lab-nosql
