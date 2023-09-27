@@ -17,7 +17,7 @@
 
 ## Kafka Connect
 
-![Exemplo Kafka Conect](../../content/kafka-connect.png)
+![Exemplo Kafka Conect](../../content/kafka-connect-minio.png)
 
 
 ### Realizando download do plugins Debezium para PostGres (Source) 
