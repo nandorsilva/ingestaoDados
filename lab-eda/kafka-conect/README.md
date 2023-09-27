@@ -261,7 +261,7 @@ http PUT http://localhost:8083/connectors/connector-minio/config < conector-mini
  wget https://repo1.maven.org/maven2/org/mongodb/kafka/mongo-kafka-connect/1.6.1/mongo-kafka-connect-1.6.1-all.jar -P plugin
 
 //Instalação do Mongodb mongo-connect
-Instalando o conector do MinIO
+docker-compose up -d mongo-connect
 
  http PUT http://localhost:8083/connectors/sinc-mongodb/config < sinc-mongodb.json
 
