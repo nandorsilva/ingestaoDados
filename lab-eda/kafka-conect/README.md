@@ -59,7 +59,7 @@ No diretório `/lab-eda/ambiente` execute o comando abaixo
 ```
 cd ../ambiente/
 
-docker-compose up -d  connect
+docker-compose up -d zk kafka-broker akhq connect
 
 docker container ls
 ```
