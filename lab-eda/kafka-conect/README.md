@@ -217,6 +217,8 @@ Intalando o plugin do MinIO
 
 
 ```
+cd ../kafka-conect/
+
 wget https://api.hub.confluent.io/api/plugins/confluentinc/kafka-connect-s3/versions/10.5.5/archive
 
 unzip archive
